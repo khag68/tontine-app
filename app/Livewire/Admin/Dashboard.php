@@ -18,7 +18,9 @@ class Dashboard extends Component
     {
         $this->loadStats();
         $this->prepareMonthlyStats();
+
     }
+
 
     public function loadStats()
     {
@@ -48,7 +50,7 @@ class Dashboard extends Component
 
     public function render()
     {
-        return view('livewire.admin.dashboard-ad', [
+        return view('livewire.admin.dashboard', [
             'totalUsers' => $this->totalUsers,
             'pendingKyc' => $this->pendingKyc,
             'kycVerified' => $this->kycVerified,
