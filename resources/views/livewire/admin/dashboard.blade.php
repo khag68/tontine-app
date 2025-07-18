@@ -1,6 +1,7 @@
 
-<x-layout-app>
-    <x-slot name="header">
+<x-admin-layout>
+    <div class="">
+        <x-slot name="header">
         <h2 class="font-semibold text-2xl text-gray-800 dark:text-gray-200 leading-tight">
             {{ __('Dashboard Admin') }}
         </h2>
@@ -94,5 +95,7 @@
             }
         });
     </script>
-    </x-layout-app>
+    </div>
+
+    </x-admin-layout>
 

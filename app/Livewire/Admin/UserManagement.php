@@ -3,7 +3,9 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
-
+use App\Models\User;
+use App\Models\AdminAction;
+use Illuminate\Support\Facades\Auth;
 use Livewire\WithPagination;
 
 class UserManagement extends Component
@@ -17,7 +19,8 @@ class UserManagement extends Component
         return User::where('role', 'client')
             ->when($this->statusFilter === 'active', fn($q) => $q->where('is_active', true))
             ->when($this->statusFilter === 'inactive', fn($q) => $q->where('is_active', false))
-            ->paginate(10); // 🧩 Nombre d'utilisateurs par page
+            ->latest()
+            ->paginate(10);
     }
 
     public function toggleActivation($userId)
@@ -32,8 +35,29 @@ class UserManagement extends Component
             'action_details' => ['new_status' => $user->is_active],
             'notes' => 'Changement de statut utilisateur',
         ]);
+        $this->dispatchBrowserEvent('notify', [
+    'message' => 'Action effectuée avec succès ✅'
+]);
 
-        session()->flash('message', 'Statut mis à jour pour ' . $user->name);
+
+    }
+
+    public function deleteUser($userId)
+    {
+        $user = User::findOrFail($userId);
+        $user->delete();
+
+        AdminAction::create([
+            'admin_id' => Auth::id(),
+            'action_type' => AdminAction::ACTION_USER_ACTIVATION,
+            'target_id' => $userId,
+            'action_details' => ['deleted' => true],
+            'notes' => 'Suppression de compte utilisateur',
+        ]);
+        $this->dispatchBrowserEvent('notify', [
+    'message' => 'Action effectuée avec succès ✅'
+]);
+
     }
 
     public function render()

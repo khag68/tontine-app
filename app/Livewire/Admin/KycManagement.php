@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Admin;
 
-
 use Livewire\Component;
 use App\Models\KycDocument;
 use App\Models\AdminAction;
@@ -14,85 +13,89 @@ class KycManagement extends Component
 {
     use WithPagination;
 
+    public $statusFilter = 'pending';
     public $selectedDocument;
     public $adminNotes = '';
-    public $filter = 'pending';
-    public $perPage = 10;
 
-    public function render()
+    public function getDocumentsProperty()
     {
-        return view('livewire.admin.kyc-management', [
-            'kycDocuments' => KycDocument::with('user')
-                ->where('status', $this->filter)
-                ->latest()
-                ->paginate($this->perPage)
-        ]);
+        return KycDocument::with('user')
+            ->where('status', $this->statusFilter)
+            ->latest()
+            ->paginate(10);
     }
 
-    public function selectDocument($documentId)
+    public function selectDocument($id)
     {
-        $this->selectedDocument = KycDocument::with('user')->findOrFail($documentId);
+        $this->selectedDocument = KycDocument::with('user')->findOrFail($id);
     }
 
-    public function approveDocument()
+    public function approve()
     {
         $this->selectedDocument->update([
             'status' => 'approved',
             'admin_notes' => $this->adminNotes
         ]);
 
-        $user = $this->selectedDocument->user;
-        $user->update(['kyc_status' => 'verified']);
+        $this->selectedDocument->user->update(['kyc_status' => 'verified']);
 
         AdminAction::create([
             'admin_id' => Auth::id(),
             'action_type' => AdminAction::ACTION_KYC_VALIDATION,
-            'target_id' => $user->id,
-            'action_details' => [
-                'document_id' => $this->selectedDocument->id,
-                'status' => 'approved',
-            ],
+            'target_id' => $this->selectedDocument->user_id,
+            'action_details' => ['status' => 'approved'],
             'notes' => $this->adminNotes,
         ]);
 
-        $this->createNotification($user->id, 'kyc_approved');
+        Notification::create([
+            'user_id' => $this->selectedDocument->user_id,
+            'type' => 'kyc_approved',
+            'title' => 'KYC Approuvé',
+            'message' => 'Votre vérification KYC a été approuvée.'
+        ]);
+
         $this->reset(['selectedDocument', 'adminNotes']);
+        $this->dispatchBrowserEvent('notify', [
+    'message' => 'Action effectuée avec succès ✅'
+]);
+
     }
 
-    public function rejectDocument()
+    public function reject()
     {
         $this->selectedDocument->update([
             'status' => 'rejected',
             'admin_notes' => $this->adminNotes
         ]);
 
-        $user = $this->selectedDocument->user;
-        $user->update(['kyc_status' => 'rejected']);
+        $this->selectedDocument->user->update(['kyc_status' => 'rejected']);
 
         AdminAction::create([
             'admin_id' => Auth::id(),
             'action_type' => AdminAction::ACTION_KYC_VALIDATION,
-            'target_id' => $user->id,
-            'action_details' => [
-                'document_id' => $this->selectedDocument->id,
-                'status' => 'rejected',
-            ],
+            'target_id' => $this->selectedDocument->user_id,
+            'action_details' => ['status' => 'rejected'],
             'notes' => $this->adminNotes,
         ]);
 
-        $this->createNotification($user->id, 'kyc_rejected');
+        Notification::create([
+            'user_id' => $this->selectedDocument->user_id,
+            'type' => 'kyc_rejected',
+            'title' => 'KYC Rejeté',
+            'message' => 'Votre vérification KYC a été rejetée.'
+        ]);
+
         $this->reset(['selectedDocument', 'adminNotes']);
+        $this->dispatchBrowserEvent('notify', [
+    'message' => 'Action effectuée avec succès ✅'
+]);
+
     }
 
-    private function createNotification($userId, $type)
+    public function render()
     {
-        Notification::create([
-            'user_id' => $userId,
-            'type' => $type,
-            'title' => $type === 'kyc_approved' ? 'KYC Approuvé' : 'KYC Rejeté',
-            'message' => $type === 'kyc_approved'
-                ? 'Votre vérification d\'identité a été approuvée.'
-                : 'Votre vérification d\'identité a été rejetée. Veuillez revoir vos documents.'
+        return view('livewire.admin.kyc-management', [
+            'documents' => $this->documents
         ]);
     }
 }

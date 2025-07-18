@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Livewire\Auth\Register;
 use App\Livewire\Auth\login;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Livewire\Admin\Cockpit;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,9 +32,12 @@ Route::view('profile', 'profile')
    /// ->middleware('guest')
    // ->name('login');
     Route::middleware(['auth', 'verified'])->group(function () {
+   //Route::get('/admin/dashboard', Cockpit::class)
+    //->name('admin.cockpit');
     Route::view('client/dashboard', 'livewire.client.dashboard')->name('client.dashboard');
     Route::view('dashboard', 'dashboard')->name('dashboard');
-    Route::get('/admin/dashboard-ad', \App\Livewire\Admin\Dashboard::class)->name('admin.dashboard');
+    Route::view('admin/dashboard', 'livewire.admin.dashboard')->name('admin.dashboard');
+    Route::view('admin/dashboard', 'livewire.admin.cockpit')->name('admin.cockpit');
     Route::view('profile', 'profile')->name(('profile'));
     Route::view('/client/deposits', 'livewire.client.deposits')->name('client.deposits');
     Route::view('client/withdrawals', 'livewire.client.withdrawals')->name('client.withdrawals');

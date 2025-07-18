@@ -1,33 +1,40 @@
 <div>
-    <h2 class="text-xl font-bold mb-4">Gestion des documents KYC</h2>
+  <div x-data="{ showModal: false }">
+    <h2 class="text-xl font-bold mb-4">📁 Gestion des demandes KYC</h2>
 
     <!-- Filtre -->
     <div class="mb-4">
-        <select wire:model="filter" class="border rounded px-3 py-2">
+        <label for="statusFilter">Filtrer par statut :</label>
+        <select wire:model="statusFilter" id="statusFilter" class="border rounded px-3 py-2">
             <option value="pending">⏳ En attente</option>
             <option value="approved">✅ Approuvé</option>
             <option value="rejected">❌ Rejeté</option>
         </select>
     </div>
 
-    <!-- Liste des documents -->
+    <!-- Tableau -->
     <table class="min-w-full bg-white rounded shadow">
-        <thead>
-            <tr class="bg-gray-100 text-gray-700">
-                <th class="px-4 py-2">Utilisateur</th>
-                <th class="px-4 py-2">Type</th>
-                <th class="px-4 py-2">Statut</th>
-                <th class="px-4 py-2">Action</th>
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="px-4 py-2">👤 Utilisateur</th>
+                <th class="px-4 py-2">📄 Type</th>
+                <th class="px-4 py-2">📌 Statut</th>
+                <th class="px-4 py-2">🔍 Action</th>
             </tr>
         </thead>
         <tbody>
-            @foreach($kycDocuments as $doc)
-            <tr class="border-b">
+            @foreach($documents as $doc)
+            <tr class="border-b hover:bg-gray-50 transition">
                 <td class="px-4 py-2">{{ $doc->user->name }}</td>
                 <td class="px-4 py-2">{{ $doc->document_type }}</td>
-                <td class="px-4 py-2">{{ ucfirst($doc->status) }}</td>
                 <td class="px-4 py-2">
-                    <button wire:click="selectDocument({{ $doc->id }})" @click="openModal = true"
+                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded text-white text-sm
+                        {{ $doc->status === 'pending' ? 'bg-yellow-500' : ($doc->status === 'approved' ? 'bg-green-600' : 'bg-red-600') }}">
+                        {{ $doc->status === 'pending' ? '⏳ En attente' : ($doc->status === 'approved' ? '✅ Approuvé' : '❌ Rejeté') }}
+                    </span>
+                </td>
+                <td class="px-4 py-2">
+                    <button wire:click="selectDocument({{ $doc->id }})" @click="showModal = true"
                         class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600 transition">
                         Voir
                     </button>
@@ -37,32 +44,25 @@
         </tbody>
     </table>
 
-    <!-- Pagination -->
-    <div class="mt-4">
-        {{ $kycDocuments->links() }}
-    </div>
+    {{ $documents->links() }}
 
-    <!-- 🪟 Modale -->
-    <div x-data="{ openModal: false }" x-show="openModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div class="bg-white rounded-lg p-6 w-full max-w-lg">
-            <h3 class="text-xl font-bold mb-2">Document KYC</h3>
-
+    <!-- 🧾 Modale de validation -->
+    <div x-show="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white p-6 rounded shadow-lg w-full max-w-lg">
             @if($selectedDocument)
+            <h3 class="text-lg font-bold mb-2">📄 Document KYC</h3>
             <p><strong>Utilisateur :</strong> {{ $selectedDocument->user->name }}</p>
             <p><strong>Type :</strong> {{ $selectedDocument->document_type }}</p>
-            <p><strong>Status :</strong> {{ $selectedDocument->status }}</p>
-            <p class="mt-4"><strong>Note admin :</strong></p>
-            <textarea wire:model.defer="adminNotes" class="w-full border rounded p-2 mt-2"></textarea>
+            <p><strong>Statut :</strong> {{ ucfirst($selectedDocument->status) }}</p>
 
-            <div class="flex justify-end mt-4 space-x-3">
-                <button wire:click="approveDocument"
-                    @click="openModal = false"
+            <textarea wire:model.defer="adminNotes" class="w-full border rounded p-2 mt-2" placeholder="Notes administratives..."></textarea>
+
+            <div class="flex justify-end gap-4 mt-4">
+                <button wire:click="approve" @click="showModal = false"
                     class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                     ✅ Approuver
                 </button>
-
-                <button wire:click="rejectDocument"
-                    @click="openModal = false"
+                <button wire:click="reject" @click="showModal = false"
                     class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
                     ❌ Rejeter
                 </button>
@@ -70,4 +70,6 @@
             @endif
         </div>
     </div>
+</div>
+
 </div>

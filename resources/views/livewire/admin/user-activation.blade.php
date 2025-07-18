@@ -1,33 +1,35 @@
 <div>
-    <h2 class="text-xl font-bold mb-4">🔒 Gestion des comptes utilisateurs</h2>
+    <div>
+    <h2 class="text-xl font-bold mb-4">📶 Utilisateurs actifs</h2>
+
+    <input wire:model.debounce.500ms="search" type="text" placeholder="🔍 Rechercher par nom..."
+        class="mb-4 px-4 py-2 border rounded w-full" />
 
     <table class="min-w-full bg-white rounded shadow">
-        <thead class="bg-gray-100 text-gray-700">
+        <thead class="bg-gray-100">
             <tr>
-                <th class="px-4 py-2">Nom</th>
-                <th class="px-4 py-2">Email</th>
-                <th class="px-4 py-2">Statut</th>
-                <th class="px-4 py-2">Action</th>
+                <th class="px-4 py-2">👤 Nom</th>
+                <th class="px-4 py-2">📧 Email</th>
+                <th class="px-4 py-2">🕒 Dernière activité</th>
             </tr>
         </thead>
         <tbody>
             @foreach($users as $user)
-            <tr class="border-b">
+            <tr class="border-b hover:bg-gray-50 transition">
                 <td class="px-4 py-2">{{ $user->name }}</td>
                 <td class="px-4 py-2">{{ $user->email }}</td>
                 <td class="px-4 py-2">
-                    <span class="px-2 py-1 rounded text-white {{ $user->is_active ? 'bg-green-600' : 'bg-red-600' }}">
-                        {{ $user->is_active ? 'Actif' : 'Inactif' }}
+                    <span class="inline-flex items-center gap-1 px-2 py-1 rounded bg-blue-600 text-white text-sm">
+                        🕒 {{ $user->updated_at->diffForHumans() }}
                     </span>
-                </td>
-                <td class="px-4 py-2">
-                    <button wire:click="toggleStatus({{ $user->id }})"
-                        class="bg-indigo-500 text-white px-3 py-1 rounded hover:bg-indigo-600 transition">
-                        {{ $user->is_active ? 'Désactiver' : 'Activer' }}
-                    </button>
                 </td>
             </tr>
             @endforeach
         </tbody>
     </table>
+
+    {{ $users->links() }}
+</div>
+
+
 </div>

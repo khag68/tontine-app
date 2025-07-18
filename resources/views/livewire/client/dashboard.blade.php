@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-client-layout>
     <div class="min-h-screen bg-gray-50 flex">
         <!-- Sidebar élégante -->
         <div class="hidden lg:flex lg:w-72 xl:w-80 flex-col border-r border-gray-100 bg-white/80 backdrop-blur-sm">
@@ -414,7 +414,7 @@
     </div>
 
 
-</x-app-layout>
+</x-client-layout>
 
 <style>
     /* Animation de gradient fluide */
